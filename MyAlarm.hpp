@@ -142,13 +142,14 @@ private:
             {
                 if (amon != -1) // month is set?
                     tmAl.tm_mon = amon;
-
+                int8_t monthDays[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+                int8_t monthLastDay = monthDays[tmAl.tm_mon];
                 for (int8_t i = tmAl.tm_mday - 1; i < 31; i++)
                 {
                     if (mDay[i] == -1)
                         continue;
-
-                    tmAl.tm_mday = mDay[i];
+                    // month overflow
+                    tmAl.tm_mday = mDay[i] > monthLastDay ? monthLastDay : mDay[i];
                     tTrigger = mktime(&tmAl);
                     if (tTrigger > tnow) // next day
                     {
@@ -156,18 +157,18 @@ private:
                         break;
                     }
                 }
-
+                // next month or year
                 if (tTrigger <= tnow)
                 {
-                    int8_t fmd = -1;
+                    int8_t fmd = -1; // first day set
                     for (auto &&d : mDay)
                         if (d != -1)
                         {
                             fmd = d;
                             break;
                         }
-
-                    tmAl.tm_mday = fmd;
+                    monthLastDay = monthDays[tmAl.tm_mon == 11 ? 0 : tmAl.tm_mon + 1]; // last day of the next month
+                    tmAl.tm_mday = fmd > monthLastDay ? monthLastDay : fmd;
                     if (amon == -1) // next month
                         tmAl.tm_mon++;
                     else // next year
@@ -324,6 +325,7 @@ public:
     time_t getNextTrigger() { return nextTrigger; }
 
     /////////////////////////////// Public static  //////////////////////////////////////////////
+
     static int8_t update()
     {
         if (!globalActive)
@@ -338,11 +340,12 @@ public:
             if (al.repeatn == 0)
                 al.calculateNextTrigger();
             else if (al.repeatn == al.firedcounter)
+            {
                 if (al.onceFreed)
                     al.free();
                 else
                     al.disable(true);
-
+            }
             calculateNextGlobalTrigger();
 
             return al.id;

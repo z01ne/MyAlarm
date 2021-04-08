@@ -191,6 +191,18 @@ TEST_CASE("Month")
 
     CHECK(MyAlarm::update() == -1);
     MyAlarm::freeAll();
+    // last day of month
+    setTime(0, 0, 0, 1, 1);
+    MyAlarm &al3 = MyAlarm::createMonth(31, 0, 0, cb);
+    setTime(0, 0, 0, 31, 1);
+    CHECK(MyAlarm::update() == 0);
+    setTime(0, 0, 0, 28, 2);
+    CHECK(MyAlarm::update() == 0);
+    setTime(0, 0, 0, 31, 3);
+    CHECK(MyAlarm::update() == 0);
+    setTime(0, 0, 0, 30, 4);
+    CHECK(MyAlarm::update() == 0);
+    MyAlarm::freeAll();
 }
 
 TEST_CASE("Year")
