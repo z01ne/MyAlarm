@@ -29,9 +29,12 @@ private:
 
     int8_t id = -1;
     bool active = false;
-    int8_t mode = 0;      // 0:repeat 1:once freed 2:once desactivated
-    int8_t type = 0;      // 0:alarm  1:timer
-    int8_t alarmType = 0; // 0:hour 1:day 2:week 3:month 4:year
+    bool onceFreed = true;
+    int8_t mode = 0;
+    uint8_t repeatn = 0;      // 0:infinit n:times
+    uint8_t firedcounter = 0; // count fired 255
+    int8_t type = 0;          // 0:alarm  1:timer
+    int8_t alarmType = 0;     // 0:hour 1:day 2:week 3:month 4:year
 
     void calculateNextTrigger()
     {
@@ -239,12 +242,6 @@ private:
         al.enable(true);
         return al;
     }
-    enum enMode_t
-    {
-        mRepeat,
-        mOnceFreed,
-        mOnceDesactivated
-    };
 
 public:
     enum daysOfWeek_t
@@ -275,6 +272,8 @@ public:
                 wDay[i] = -1;
             mDay[i] = -1;
         }
+        firedcounter = 0;
+        repeatn = 0;
         callback = NULL;
     }
 
@@ -300,10 +299,18 @@ public:
             calculateNextGlobalTrigger();
     }
 
-    bool isActive() { return active; }
-
-    void once(bool _onceFreed = true) { mode = _onceFreed ? mOnceFreed : mOnceDesactivated; }
-    void repeat() { mode = mRepeat; }
+    void once(bool _onceFreed = true)
+    {
+        onceFreed = _onceFreed;
+        repeatn = 1;
+    }
+    void repeat(uint8_t n = 0, bool _doneFreed = true)
+    {
+        repeatn = n;
+        onceFreed = _doneFreed;
+    }
+    void resetCounter() { firedcounter = 0; }
+    void resetTimer() { calculateNextTrigger(); }
     void setCallback(std::function<void(void)> cb)
     {
         if (cb != NULL)
@@ -312,8 +319,11 @@ public:
 
     int8_t getId() { return id; }
     bool isNull() { return id == -1; }
+    bool isActive() { return active; }
+    bool isTimer() { return type == 1; }
     time_t getNextTrigger() { return nextTrigger; }
 
+    /////////////////////////////// Public static  //////////////////////////////////////////////
     static int8_t update()
     {
         if (!globalActive)
@@ -322,20 +332,16 @@ public:
         if (globalNextTrigger <= timeProv())
         {
             auto &al = alarms[idNextAlarm];
+            al.firedcounter++;
             al.callback();
 
-            switch (al.mode)
-            {
-            case 0: // repeat
+            if (al.repeatn == 0)
                 al.calculateNextTrigger();
-                break;
-            case 1: // once freed
-                al.free();
-                break;
-            case 2: // once desactivated
-                al.disable(true);
-                break;
-            }
+            else if (al.repeatn == al.firedcounter)
+                if (al.onceFreed)
+                    al.free();
+                else
+                    al.disable(true);
 
             calculateNextGlobalTrigger();
 
