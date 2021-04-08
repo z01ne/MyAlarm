@@ -10,21 +10,7 @@ using namespace std;
 
 int main()
 {
-    int i = 3;
-    switch (i)
-    {
-    case 1:
-        std::cout << "1";
-    case 2:
-        std::cout << "2"; //execution starts at this case label
-    case 3:
-        std::cout << "3";
-    case 4:
-    case 5:
-        std::cout << "45";
-        break; //execution of subsequent statements is terminated
-    case 6:
-        std::cout << "6";
-    }
+    // uint8_t i = 255 + 1;
+    cout << "i: " << (int)(uint8_t)256;
     return 0;
 }

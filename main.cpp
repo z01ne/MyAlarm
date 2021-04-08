@@ -241,4 +241,17 @@ TEST_CASE("Timer")
     setTime(2, 1, 2);
     MyAlarm::update();
     CHECK(timer.isNull() == true);
+
+    auto &timer2 = MyAlarm::createTimer(1, 1, 2, cb);
+    timer2.repeat(3);
+
+    setTime(4, 2, 3);
+    CHECK(MyAlarm::update() == 0);
+
+    setTime(6, 3, 4);
+    CHECK(MyAlarm::update() == 0);
+
+    setTime(8, 4, 5);
+    CHECK(MyAlarm::update() == -1);
+    CHECK(timer.isNull() == true);
 }
