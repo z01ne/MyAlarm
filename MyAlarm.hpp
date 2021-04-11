@@ -18,7 +18,7 @@ private:
     static time_t globalNextTrigger;
     static int8_t idNextAlarm;
     static bool globalActive;
-    static MyAlarm dummy;
+    // static MyAlarm dummy;
 
     std::function<void(void)> callback;
 
@@ -245,6 +245,7 @@ private:
     }
 
 public:
+    static MyAlarm dummy;
     enum daysOfWeek_t
     {
         Sunday,
@@ -481,4 +482,5 @@ time_t MyAlarm::globalNextTrigger = __LONG_MAX;
 int8_t MyAlarm::idNextAlarm = -1;
 bool MyAlarm::globalActive = true;
 MyAlarm MyAlarm::dummy;
+MyAlarm &timerAlarm = MyAlarm::dummy;
 #endif
