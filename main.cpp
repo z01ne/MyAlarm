@@ -266,4 +266,6 @@ TEST_CASE("Timer")
     setTime(8, 4, 5);
     CHECK(MyAlarm::update() == -1);
     CHECK(timer.isNull() == true);
+
+    auto &timer3 = MyAlarm::createTimer(1, 1, 2, cb);
 }
