@@ -2,11 +2,21 @@
 #define MyAlarm_h
 #include <time.h> /* time_t, struct tm, time, localtime */
 
-#include <functional>
-
+#ifdef __AVR
+#ifndef _NBALARMS
+#define _NBALARMS 5
+#endif
+typedef void (*cb_t)();
+typedef time_t (*cbProv_t)();
+#else
 #ifndef _NBALARMS
 #define _NBALARMS 20
 #endif
+#include <functional>
+typedef std::function<time_t(void)> cbProv_t;
+typedef std::function<void(void)> cb_t;
+#endif
+
 #define __LONG_MAX 2147483647L
 
 class MyAlarm
@@ -14,13 +24,13 @@ class MyAlarm
 private:
     /* data */
     static MyAlarm alarms[_NBALARMS];
-    static std::function<time_t(void)> timeProv;
+    static cbProv_t timeProv;
     static time_t globalNextTrigger;
     static int8_t idNextAlarm;
     static bool globalActive;
     // static MyAlarm dummy;
 
-    std::function<void(void)> callback;
+    cb_t callback;
 
     int8_t sec = -1, min = -1, hour = -1, month = -1;
     int8_t wDay[7];
@@ -53,7 +63,7 @@ private:
                 if (wDay[i] != -1)
                     nbwDay++;
 
-            tmAl.tm_sec = 0;
+            tmAl.tm_sec = sec > -1 ? sec : tmAl.tm_sec;
             tmAl.tm_min = min > -1 ? min : tmAl.tm_min;
             tmAl.tm_hour = hour > -1 ? hour : tmAl.tm_hour;
             tmAl.tm_mon = month > -1 ? month : tmAl.tm_mon;
@@ -167,6 +177,7 @@ private:
                             fmd = d;
                             break;
                         }
+
                     monthLastDay = monthDays[tmAl.tm_mon == 11 ? 0 : tmAl.tm_mon + 1]; // last day of the next month
                     tmAl.tm_mday = fmd > monthLastDay ? monthLastDay : fmd;
                     if (amon == -1) // next month
@@ -218,7 +229,7 @@ private:
         }
     }
 
-    static MyAlarm &create(int8_t _sec, int8_t _minute, int8_t _hour, int8_t _daysOfWeek[], int8_t _daysOfMonth[], int8_t _month, int8_t sizeW, int8_t sizeM, int8_t _type, int8_t _alarmType, std::function<void(void)> _callback)
+    static MyAlarm &create(int8_t _sec, int8_t _minute, int8_t _hour, int8_t _daysOfWeek[], int8_t _daysOfMonth[], int8_t _month, int8_t sizeW, int8_t sizeM, int8_t _type, int8_t _alarmType, const cb_t &_callback)
     {
         auto id = available();
         if (id == -1)
@@ -246,19 +257,37 @@ private:
 
 public:
     static MyAlarm dummy;
-    enum daysOfWeek_t
+    enum daysOfWeek_t : uint8_t
     {
-        Sunday,
-        Monday,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday
+        dw_Sunday,
+        dw_Monday,
+        dw_Tuesday,
+        dw_Wednesday,
+        dw_Thursday,
+        dw_Friday,
+        dw_Saturday
+    };
+    enum monthsOfYear_t : uint8_t
+    {
+        m_January = 1,
+        m_February,
+        m_March,
+        m_April,
+        m_May,
+        m_June,
+        m_july,
+        m_August,
+        m_September,
+        m_October,
+        m_November,
+        m_December
     };
 
     void free()
     {
+        if (isNull())
+            return;
+
         if (active && id == idNextAlarm)
         {
             active = false;
@@ -277,11 +306,13 @@ public:
         firedcounter = 0;
         repeatn = 0;
         callback = NULL;
+        nextTrigger = __LONG_MAX;
     }
 
     void disable(bool only = false)
     {
-        if (!active)
+
+        if (isNull() || !active)
             return;
 
         active = false;
@@ -292,6 +323,8 @@ public:
 
     void enable(bool forced = false)
     {
+        if (isNull())
+            return;
         if (active && !forced)
             return;
 
@@ -312,8 +345,13 @@ public:
         onceFreed = _doneFreed;
     }
     void resetCounter() { firedcounter = 0; }
-    void resetTimer() { calculateNextTrigger(); }
-    void setCallback(std::function<void(void)> cb)
+    uint8_t getCounter() { return firedcounter; }
+    void resetTimer()
+    {
+        if (type == 1)
+            calculateNextTrigger();
+    }
+    void setCallback(const cb_t &cb)
     {
         if (cb != NULL)
             callback = cb;
@@ -330,23 +368,30 @@ public:
     static int8_t update()
     {
         if (!globalActive)
-            return -1;
+            return -2;
 
         if (globalNextTrigger <= timeProv())
         {
             auto &al = alarms[idNextAlarm];
             al.firedcounter++;
-            al.callback();
 
-            if (al.repeatn == 0)
-                al.calculateNextTrigger();
-            else if (al.repeatn == al.firedcounter)
+            if (al.callback != NULL)
+                al.callback();
+
+            // printf("DEBUG: Alarm %d Fired %d\n", al.id, al.firedcounter);
+            if (!al.isNull()) // freed in callback
             {
-                if (al.onceFreed)
-                    al.free();
-                else
-                    al.disable(true);
+                if (al.repeatn == 0)
+                    al.calculateNextTrigger();
+                else if (al.repeatn == al.firedcounter)
+                {
+                    if (al.onceFreed)
+                        al.free();
+                    else
+                        al.disable(true);
+                }
             }
+
             calculateNextGlobalTrigger();
 
             return al.id;
@@ -363,7 +408,7 @@ public:
     }
     static MyAlarm &getAlarmById(int8_t id)
     {
-        if (id >= 0 && id <= _NBALARMS)
+        if (id >= 0 && id < _NBALARMS)
         {
             MyAlarm &al = alarms[id];
             if (al.id > -1)
@@ -374,12 +419,13 @@ public:
         return dummy;
     }
 
-    static void setTimeProvider(std::function<time_t(void)> tp)
+    static void setTimeProvider(const cbProv_t &tp)
     {
         if (tp != NULL)
             timeProv = tp;
-        else
-            timeProv = []() { return time(nullptr); };
+        // else
+        //     timeProv = []()
+        //     { return time(nullptr); };
     }
 
     static void stopService() { globalActive = false; }
@@ -410,66 +456,66 @@ public:
         idNextAlarm = -1;
     }
 
-    static MyAlarm &createHour(int8_t _minute, std::function<void(void)> _callback)
+    static MyAlarm &createHour(int8_t _minute, int8_t _second, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t _daysOfMonth[1];
         int8_t month = -1;
 
-        return create(0, _minute, -1, _daysOfWeek, _daysOfMonth, month, 0, 0, 0, 0, _callback);
+        return create(_second, _minute, -1, _daysOfWeek, _daysOfMonth, month, 0, 0, 0, 0, _callback);
     }
-    static MyAlarm &createDay(int8_t _hour, int8_t _minute, std::function<void(void)> _callback)
+    static MyAlarm &createDay(int8_t _hour, int8_t _minute, int8_t _second, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t _daysOfMonth[1];
         int8_t month = -1;
 
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 0, 0, 1, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 0, 0, 1, _callback);
     }
-    static MyAlarm &createWeek(daysOfWeek_t _dayOfWeek, int8_t _hour, int8_t _minute, std::function<void(void)> _callback)
+    static MyAlarm &createWeek(daysOfWeek_t _dayOfWeek, int8_t _hour, int8_t _minute, int8_t _second, const cb_t &_callback)
     {
-        int8_t _daysOfWeek[]{_dayOfWeek};
+        int8_t _daysOfWeek[]{(int8_t)_dayOfWeek};
         int8_t _daysOfMonth[1];
         int8_t month = -1;
 
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 1, 0, 0, 2, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 1, 0, 0, 2, _callback);
     }
-    static MyAlarm &createWeek(int8_t _daysOfWeek[], int8_t _hour, int8_t _minute, int8_t size, std::function<void(void)> _callback)
+    static MyAlarm &createWeek(int8_t _daysOfWeek[], int8_t _hour, int8_t _minute, int8_t _second, int8_t size, const cb_t &_callback)
     {
         int8_t _daysOfMonth[1];
         int8_t month = -1;
 
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, size, 0, 0, 2, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, size, 0, 0, 2, _callback);
     }
-    static MyAlarm &createMonth(int8_t _dayOfMonth, int8_t _hour, int8_t _minute, std::function<void(void)> _callback)
+    static MyAlarm &createMonth(int8_t _dayOfMonth, int8_t _hour, int8_t _minute, int8_t _second, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t _daysOfMonth[]{_dayOfMonth};
         int8_t month = -1;
 
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 1, 0, 3, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 1, 0, 3, _callback);
     }
-    static MyAlarm &createMonth(int8_t _daysOfMonth[], int8_t _hour, int8_t _minute, int8_t size, std::function<void(void)> _callback)
+    static MyAlarm &createMonth(int8_t _daysOfMonth[], int8_t _hour, int8_t _minute, int8_t _second, int8_t size, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t month = -1;
 
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, size, 0, 3, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, size, 0, 3, _callback);
     }
-    static MyAlarm &createYear(int8_t month, int8_t _dayOfMonth, int8_t _hour, int8_t _minute, std::function<void(void)> _callback)
+    static MyAlarm &createYear(int8_t month, int8_t _dayOfMonth, int8_t _hour, int8_t _minute, int8_t _second, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t _daysOfMonth[]{_dayOfMonth};
         month--;
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 1, 0, 4, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, 1, 0, 4, _callback);
     }
-    static MyAlarm &createYear(int8_t month, int8_t _daysOfMonth[], int8_t _hour, int8_t _minute, int8_t size, std::function<void(void)> _callback)
+    static MyAlarm &createYear(int8_t month, int8_t _daysOfMonth[], int8_t _hour, int8_t _minute, int8_t _second, int8_t size, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         month--;
-        return create(0, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, size, 0, 4, _callback);
+        return create(_second, _minute, _hour, _daysOfWeek, _daysOfMonth, month, 0, size, 0, 4, _callback);
     }
-    static MyAlarm &createTimer(int8_t _hour, int8_t _minute, int8_t _sec, std::function<void(void)> _callback)
+    static MyAlarm &createTimer(int8_t _hour, int8_t _minute, int8_t _sec, const cb_t &_callback)
     {
         int8_t _daysOfWeek[1];
         int8_t _daysOfMonth[1];
@@ -477,7 +523,13 @@ public:
     }
 };
 MyAlarm MyAlarm::alarms[_NBALARMS];
-std::function<time_t(void)> MyAlarm::timeProv = []() { return time(nullptr); };
+#ifdef _STM32_DEF_ // bug in time(nullptr)
+cbProv_t MyAlarm::timeProv = []()
+{ return __LONG_MAX; };
+#else
+cbProv_t MyAlarm::timeProv = []()
+{ return time(nullptr); };
+#endif
 time_t MyAlarm::globalNextTrigger = __LONG_MAX;
 int8_t MyAlarm::idNextAlarm = -1;
 bool MyAlarm::globalActive = true;
