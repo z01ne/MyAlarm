@@ -97,8 +97,8 @@ _Q: How many alarms can be created?_
 A: It depends on the system. Up to five alarms can be scheduled in Arduino AVR and 20 for others.
 The number of alarms can be changed by defining `_NBALARMS` to the desired number befor including the library.   
 exemple:  
-`#define _NBALARMS 10   
-#include "MyAlarm.hpp"`
+`#define _NBALARMS 10`   
+`#include "MyAlarm.hpp"`
 
 once Alarms or Timers are freed when they are triggered so another once alarm can be set to trigger again.
 
