@@ -94,12 +94,10 @@ This is  the expected behaviour for Alarms (tasks scheduled for a specific time 
 
 _Q: How many alarms can be created?_
 
-A: It depends on the system. Up to five alarms can be scheduled in Arduino AVR and 20 for others.
+A: It depends on the system. Up to five alarms can be scheduled in Arduino AVR based boards and 20 for other boards.
 The number of alarms can be changed by defining `_NBALARMS` to the desired number befor including the library.   
 exemple:  
 `#define _NBALARMS 10`   
 `#include <MyAlarm.hpp>`
 
-once Alarms or Timers are freed when they are triggered so another once alarm can be set to trigger again.
-
-There is no limit to the number of times a onceOnly alarm can be reset.
+once Alarms or Timers are freed when they are triggered so another once alarm or timer can be set to trigger again.
