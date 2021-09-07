@@ -66,7 +66,7 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
 `isTimer()`   
 `resetTimer()`   
 `resetCounter()`  
-`setCallback(cb)` 
+`setCallback(cb)`   
 `repeat(n)`   
 `once()`   
  
