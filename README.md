@@ -48,10 +48,11 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
  If used inside the callback will return the current alarm or timer.   
  you can use it to get :`timerAlarm.getNextAlarm().getCounter()` return how many times fired and other information (see instance functions).  
  
-`timerAlarm.countAvailable()` get the number of alarms or timers that you can create.  
+`timerAlarm.countAvailable()` get the number of alarms or timers that you can use.  
 `timerAlarm.freeAll()` free all the alarms and timers and make theme available.   
 `timerAlarm.getAlarmById(id)`   
-`timerAlarm.recalculateAllTriggers()` 
+`timerAlarm.recalculateAllTriggers()`  
+`timerAlarm.getGlobalNextTrigger()` get the unix time stamp of the next trigger of all alarms and timers.   
 
 ### Instance functions
 `getCounter()`   
@@ -68,4 +69,37 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
 `setCallback(cb)` 
 `repeat(n)`   
 `once()`   
-     
+ 
+ 
+FAQ
+---
+_Q: What hardware and software is needed to use this library?_
+
+A: This library requires an SDK with a ctime implementation. No internal or external hardware is used by the Alarm library.
+
+_Q: Are there any restrictions on the code in a task handler function?_
+
+A: No. The scheduler does not use interrupts so your task handling function is no different from other functions you create in your sketch. 
+
+(If you need timer intervals shorter than 1 second then you should look for a different library)
+
+_Q: How are scheduled tasks affected if the system time is changed?_
+
+A: Tasks are scheduled for specific times designated by the system clock. If the system time is reset to a later time (for example one hour ahead) then all alarms will occur one hour later.
+
+If the system time is set backwards (for example one hour back) then the alarms will occur an hour earlier.
+
+If the time is reset before the time a task was scheduled, then the task will be triggered on the next service (the next call to Cron.delay).
+This is  the expected behaviour for Alarms (tasks scheduled for a specific time of day will trigger at that time), but the affect on task for subfractions may not be intuitive. If a timer is scheduled to trigger in 5 minutes time and the clock is set ahead by one hour, that timer will not trigger until one hour and 5 minutes has elapsed.
+
+_Q: How many alarms can be created?_
+
+A: It depends on the system. Up to five alarms can be scheduled in Arduino AVR and 20 for others.
+The number of alarms can be changed by defining `_NBALARMS` to the desired number befor including the library.   
+exemple:  
+`#define _NBALARMS 10
+#include "MyAlarm.hpp"`
+
+once Alarms or Timers are freed when they are triggered so another once alarm can be set to trigger again.
+
+There is no limit to the number of times a onceOnly alarm can be reset.
