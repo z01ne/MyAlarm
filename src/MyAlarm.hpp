@@ -370,6 +370,8 @@ public:
         if (!globalActive)
             return -2;
 
+        int8_t idCurrent = idNextAlarm;
+
         if (globalNextTrigger <= timeProv())
         {
             auto &al = alarms[idNextAlarm];
@@ -381,7 +383,7 @@ public:
             // printf("DEBUG: Alarm %d Fired %d\n", al.id, al.firedcounter);
             if (!al.isNull()) // freed in callback
             {
-                if (al.repeatn == 0)
+                if (al.repeatn == 0 || al.firedcounter < al.repeatn)
                     al.calculateNextTrigger();
                 else if (al.repeatn == al.firedcounter)
                 {
@@ -394,7 +396,7 @@ public:
 
             calculateNextGlobalTrigger();
 
-            return al.id;
+            return idCurrent;
         }
         return -1;
     }

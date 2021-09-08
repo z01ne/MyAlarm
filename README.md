@@ -22,6 +22,7 @@ Create an alarm that fire every week at the specified time and days of week.
 `timerAlarm.createMonth(dayOfMonth,hour,min, sec, monthAlarm)`  
 `timerAlarm.createMonth(daysOfMonthArray,hour,min, sec, arrSize, monthAlarm)`  
 Create an alarm that fire every month at the specified time and days of month.  
+note: setting `dayOfMonth` to 31, the alarm will trigger at the end of every month
 
 `timerAlarm.createYear(month,dayOfMonth,hour,min, sec, monthAlarm)`  
 `timerAlarm.createYear(month,daysOfMonthArray,hour,min, sec, arrSize, monthAlarm)`  
