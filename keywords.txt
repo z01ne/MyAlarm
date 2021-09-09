@@ -1,0 +1,35 @@
+# Syntax Coloring Map For MyAlarmLibrary
+
+# Datatypes (KEYWORD1)
+MyAlarm    KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+free KEYWORD2
+disable KEYWORD2
+enable KEYWORD2
+once KEYWORD2
+repeat KEYWORD2
+resetCounter KEYWORD2
+resetTimer KEYWORD2
+setCallback KEYWORD2
+getId KEYWORD2
+isNull KEYWORD2
+isActive KEYWORD2
+isTimer KEYWORD2
+getNextTrigger KEYWORD2
+update KEYWORD2
+getNextAlarm KEYWORD2
+getAlarmById KEYWORD2
+setTimeProvider KEYWORD2
+stopService KEYWORD2
+startService KEYWORD2
+countAvailable KEYWORD2
+getGlobalNextTrigger KEYWORD2
+recalculateAllTriggers KEYWORD2
+freeAll KEYWORD2
+
+# Instances (KEYWORD2)
+timerAlarm KEYWORD2
+
+# Constants (LITERAL1)
+

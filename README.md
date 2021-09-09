@@ -1,10 +1,13 @@
 # MyAlarm
 
-makes it easy to create tasks that run at a specific time or periodically after an interval.
+Makes it easy to create tasks that run at a specific time or periodically after an interval.  
+Support multiple days per alarm.
 
 Tasks scheduled at a particular time of day are called Alarms.  
 Tasks scheduled after an interval of time has elapsed are called Timers.  
 These tasks can be created to continuously repeat or repeat n times or to occur once only.  
+
+note: depends on ctime library, provided by each platform SDK.
 ## API
 `timerAlarm.update()`  
 should be called frequently or placed in the loop, it's where the alarms and timers are serviced.   
@@ -26,7 +29,7 @@ note: setting `dayOfMonth` to 31, the alarm will trigger at the end of every mon
 
 `timerAlarm.createYear(month,dayOfMonth,hour,min, sec, monthAlarm)`  
 `timerAlarm.createYear(month,daysOfMonthArray,hour,min, sec, arrSize, monthAlarm)`  
-Create an alarm that fire every year at the specified time, month and days of month.  
+Create an alarm that fire every year at the specified time/date.  
 
 `timerAlarm.createTimer(hour, min, sec, myTimer)`  
 Create a timer that fire every time the duration specified elapsed.  
@@ -39,6 +42,7 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
  
  `timerAlarm.setTimeProvider(cb_Provider)`  
  `cb_Provider` is a function that return the current unix time stamp.  
+ by default the ctime `time()` function is used.
  
  `timerAlarm.stopService()`  
  `timerAlarm.startService()`   

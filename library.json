@@ -1,0 +1,19 @@
+{
+    "name": "MyAlarm",
+    "description": "A library that manage alarms and timers, support multiple days per alarm.",
+    "keywords": "timing,alarm,timer",
+    "authors": {
+        "name": "Z01NE",
+        "email": "zerone.01@hotmail.com",
+        "maintainer": true
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Z01NE/MyAlarm.git"
+    },
+    "version": "1.0.0",
+    "license": "MIT",
+    "frameworks": "arduino",
+    "platforms": "*",
+    "dependencies": {}
+}

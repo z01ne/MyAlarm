@@ -1,4 +1,4 @@
-#include <MyAlarm.hpp>
+#include <MyAlarm.h>
 #include <STM32RTC.h>
 
 STM32RTC &rtc = STM32RTC::getInstance();

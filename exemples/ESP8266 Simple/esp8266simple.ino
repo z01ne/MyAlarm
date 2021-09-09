@@ -14,7 +14,7 @@
 
 #include <ESP8266WiFi.h>
 #include <coredecls.h> // settimeofday_cb()
-#include <MyAlarm.hpp>
+#include <MyAlarm.h>
 
 ////////////////////////////////////////////////////////
 #define STASSID "your-ssid"

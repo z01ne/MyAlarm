@@ -1,19 +1,19 @@
 #define _NBALARMS 10
-#include <MyAlarm.hpp>
+#include <MyAlarm.h>
 
 time_t prevMillis = 0;
-// time provider based on millis()
-time_t currentTime()
+// time keeping using millis()
+void updateTime()
 {
   time_t curtime;
   time(&curtime);
-  while (millis() - prevMillis >= 1000)
+  time_t elapsed = millis() - prevMillis;
+  if (elapsed >= 1000)
   {
     curtime++;
-    prevMillis += 1000;
+    prevMillis += elapsed;
+    set_system_time(curtime);
   }
-  set_system_time(curtime);
-  return curtime;
 }
 
 void nowTimer()
@@ -66,7 +66,7 @@ void ofTheMonth()
 void endAlarm()
 {
   Serial.println("it's the END");
-  timerAlarm.createTimer(0, 0, 10, ofTheMonth).repeat(5);
+  timerAlarm.createTimer(0, 0, 1, ofTheMonth).repeat(5);
 }
 
 void firstWeekAlarm()
@@ -89,8 +89,8 @@ void setup()
   cDateTime.tm_sec = 0;
   cDateTime.tm_isdst = 0;
   set_system_time(mktime(&cDateTime));
+  ///////////////////////////////
 
-  timerAlarm.setTimeProvider(currentTime);
   timerAlarm.createTimer(0, 0, 5, helloTimer);
   timerAlarm.createTimer(0, 0, 1, nowTimer);
   timerAlarm.createTimer(0, 0, 10, crazyTimer).once();
@@ -104,5 +104,6 @@ void setup()
 
 void loop()
 {
+  updateTime();
   timerAlarm.update();
 }
