@@ -21,7 +21,7 @@
 #define STAPSK "your-password"
 
 bool timeIsSet = false;
-
+// called when time is set from the sntp server
 void timeIsSet_cb()
 {
   if (!timeIsSet)

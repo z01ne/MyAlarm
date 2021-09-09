@@ -431,11 +431,17 @@ public:
     }
 
     static void stopService() { globalActive = false; }
-    static void startService()
+    static void startService(bool reset = true)
     {
-        recalculateAllTriggers();
-        globalActive = true;
+        if (!globalActive)
+        {
+            globalActive = true;
+            if (reset)
+                recalculateAllTriggers();
+        }
     }
+    static bool isServicing() { return globalActive == true; }
+
     static int8_t countAvailable()
     {
         int8_t cnt = 0;

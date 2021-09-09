@@ -44,6 +44,7 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
  `cb_Provider` is a function that return the current unix time stamp.  
  by default the ctime `time()` function is used.
  
+ `timerAlarm.isServicing()`   
  `timerAlarm.stopService()`  
  `timerAlarm.startService()`   
  Start and stop servicing alarms and timers.
