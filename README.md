@@ -90,12 +90,11 @@ A: No. The scheduler does not use interrupts so your task handling function is n
 
 _Q: How are scheduled tasks affected if the system time is changed?_
 
-A: Tasks are scheduled for specific times designated by the system clock. If the system time is reset to a later time (for example one hour ahead) then all alarms will occur one hour later.
+A: Tasks are scheduled for specific times designated by the system clock. 
+If the system time is reset to a later time (for example one hour ahead) then all tasks that have a time less or equal to the system clock will occur in the next `timerAlarm.update()`s.   
 
-If the system time is set backwards (for example one hour back) then the alarms will occur an hour earlier.
-
-If the time is reset before the time a task was scheduled, then the task will be triggered on the next service (the next call to timerAlarm.update()).
-This is  the expected behaviour for Alarms (tasks scheduled for a specific time of day will trigger at that time), but the affect on task for subfractions may not be intuitive. If a timer is scheduled to trigger in 5 minutes time and the clock is set ahead by one hour, that timer will not trigger until one hour and 5 minutes has elapsed.
+If the system time is set backward (for example one hour back), then the tasks will be delayed the amount of time set backward.   
+`timerAlarm.recalculateAllTriggers()` can be used in case of time change (Timers will be reset).
 
 _Q: How many alarms can be created?_
 
