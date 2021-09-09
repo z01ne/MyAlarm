@@ -94,7 +94,7 @@ A: Tasks are scheduled for specific times designated by the system clock. If the
 
 If the system time is set backwards (for example one hour back) then the alarms will occur an hour earlier.
 
-If the time is reset before the time a task was scheduled, then the task will be triggered on the next service (the next call to Cron.delay).
+If the time is reset before the time a task was scheduled, then the task will be triggered on the next service (the next call to timerAlarm.update()).
 This is  the expected behaviour for Alarms (tasks scheduled for a specific time of day will trigger at that time), but the affect on task for subfractions may not be intuitive. If a timer is scheduled to trigger in 5 minutes time and the clock is set ahead by one hour, that timer will not trigger until one hour and 5 minutes has elapsed.
 
 _Q: How many alarms can be created?_
