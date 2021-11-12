@@ -41,7 +41,7 @@ private:
     bool active = false;
     bool onceFreed = true;
     int8_t mode = 0;
-    uint8_t repeatn = 0;      // 0:infinit n:times
+    uint8_t nbRun = 0;        // 0:infinit n:times
     uint8_t firedcounter = 0; // count fired 255
     int8_t type = 0;          // 0:alarm  1:timer
     int8_t alarmType = 0;     // 0:hour 1:day 2:week 3:month 4:year
@@ -285,7 +285,7 @@ public:
 
     void free()
     {
-        if (isNull())
+        if (isFree())
             return;
 
         if (active && id == idNextAlarm)
@@ -304,7 +304,7 @@ public:
             mDay[i] = -1;
         }
         firedcounter = 0;
-        repeatn = 0;
+        nbRun = 0;
         callback = NULL;
         nextTrigger = __LONG_MAX;
     }
@@ -312,7 +312,7 @@ public:
     void disable(bool only = false)
     {
 
-        if (isNull() || !active)
+        if (isFree() || !active)
             return;
 
         active = false;
@@ -323,7 +323,7 @@ public:
 
     void enable(bool forced = false)
     {
-        if (isNull())
+        if (isFree())
             return;
         if (active && !forced)
             return;
@@ -334,16 +334,26 @@ public:
             calculateNextGlobalTrigger();
     }
 
-    void once(bool _onceFreed = true)
+    [[deprecated("Use runOnce(bool).")]] void once(bool _onceFreed = true)
     {
         onceFreed = _onceFreed;
-        repeatn = 1;
+        nbRun = 1;
     }
-    void repeat(uint8_t n = 0, bool _doneFreed = true)
+    [[deprecated("Use run(int,bool).")]] void repeat(uint8_t n = 0, bool _doneFreed = true)
     {
-        repeatn = n;
+        nbRun = n;
         onceFreed = _doneFreed;
     }
+    void run(uint8_t n = 0, bool _doneFreed = true)
+    {
+        nbRun = n;
+        onceFreed = _doneFreed;
+    }
+    void runOnce(bool _onceFreed = true)
+    {
+        run(1, _onceFreed);
+    }
+    uint8_t getnbRun() { return nbRun; }
     void resetCounter() { firedcounter = 0; }
     uint8_t getCounter() { return firedcounter; }
     void resetTimer()
@@ -358,7 +368,8 @@ public:
     }
 
     int8_t getId() { return id; }
-    bool isNull() { return id == -1; }
+    [[deprecated("Use isFree().")]] bool isNull() { return id == -1; }
+    bool isFree() { return id == -1; }
     bool isActive() { return active; }
     bool isTimer() { return type == 1; }
     time_t getNextTrigger() { return nextTrigger; }
@@ -381,11 +392,11 @@ public:
                 al.callback();
 
             // printf("DEBUG: Alarm %d Fired %d\n", al.id, al.firedcounter);
-            if (!al.isNull()) // freed in callback
+            if (!al.isFree()) // freed in callback
             {
-                if (al.repeatn == 0 || al.firedcounter < al.repeatn)
+                if (al.nbRun == 0 || al.firedcounter < al.nbRun)
                     al.calculateNextTrigger();
-                else if (al.repeatn == al.firedcounter)
+                else if (al.nbRun == al.firedcounter)
                 {
                     if (al.onceFreed)
                         al.free();

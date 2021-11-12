@@ -34,9 +34,9 @@ Create an alarm that fire every year at the specified time/date.
 `timerAlarm.createTimer(hour, min, sec, myTimer)`  
 Create a timer that fire every time the duration specified elapsed.  
 
-If you want to create a timer or alarm that trigger once or n times chain 'once()' or 'repeat(n)' with create  
-Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`   
-     `timerAlarm.createHour(min, sec, hourAlarm).repeat(n)` if n equal to 0, it will repeat indefinitly   
+If you want to create a timer or alarm that trigger once or n times chain 'runOnce()' or 'run(n)' with create  
+Ex : `timerAlarm.createHour(min, sec, hourAlarm).runOnce()`   
+     `timerAlarm.createHour(min, sec, hourAlarm).run(n)` if n equal to 0, it will repeat indefinitly   
  
  ### Other functions
  
@@ -61,20 +61,21 @@ Ex : `timerAlarm.createHour(min, sec, hourAlarm).once()`
 `timerAlarm.getGlobalNextTrigger()` get the unix time stamp of the next trigger of all alarms and timers.   
 
 ### Instance functions
-`getCounter()`   
 `disable()`   
 `enable()`   
 `free()` clear the object and make it available for reuse   
 `getId()`   
 `getNextTrigger()` return the unix time stamp of the next trigger   
 `isActive()`   
-`isNull()`  
+`isFree()`  
 `isTimer()`   
 `resetTimer()`   
+`getCounter()`    return the number of times fired
 `resetCounter()`  
 `setCallback(cb)`   
-`repeat(n)`   
-`once()`   
+`run(n)`   
+`runOnce()`   
+`getnbRun()` return number of run (0 mean it runing infinitly )
  
  
 FAQ
