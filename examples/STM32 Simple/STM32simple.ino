@@ -20,7 +20,7 @@ void helloTimer()
 {
   Serial.print("Hello ");
   Serial.println(timerAlarm.getNextAlarm().getCounter());
-  timerAlarm.createTimer(0, 0, 1, blinkTimer).repeat(3);
+  timerAlarm.createTimer(0, 0, 1, blinkTimer).run(3);
 }
 
 void crazyTimer()
@@ -31,7 +31,7 @@ void crazyTimer()
   Serial.print(seconds);
   Serial.println(" seconds");
 
-  timerAlarm.createTimer(0, 0, seconds, crazyTimer).once();
+  timerAlarm.createTimer(0, 0, seconds, crazyTimer).runOnce();
 }
 
 void morningAlarm()
@@ -52,7 +52,7 @@ void ofTheMonth()
 void endAlarm()
 {
   Serial.println("it's the END");
-  timerAlarm.createTimer(0, 0, 10, ofTheMonth).repeat(5);
+  timerAlarm.createTimer(0, 0, 10, ofTheMonth).run(5);
 }
 
 void firstWeekAlarm()
@@ -72,7 +72,7 @@ void setup()
 
   timerAlarm.createTimer(0, 0, 5, helloTimer);
   timerAlarm.createTimer(0, 0, 1, nowTimer);
-  timerAlarm.createTimer(0, 0, 10, crazyTimer).once();
+  timerAlarm.createTimer(0, 0, 10, crazyTimer).runOnce();
   timerAlarm.createDay(7, 30, 0, morningAlarm);
   int8_t weekEnd[] = {timerAlarm.dw_Saturday, timerAlarm.dw_Sunday};
   timerAlarm.createWeek(weekEnd, 10, 0, 0, 2, weekendAlarm);
